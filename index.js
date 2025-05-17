@@ -15,6 +15,7 @@ class LexOfficeClient {
     url.searchParams.append('size', '25');
     url.searchParams.append('sort', 'voucherDate,DESC');
     url.searchParams.append('voucherType', 'invoice');
+    url.searchParams.append('voucherStatus', 'open');
 
     try {
       const response = await fetch(url.toString(), {
