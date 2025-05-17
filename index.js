@@ -10,12 +10,12 @@ class LexOfficeClient {
   async getVoucherlist() {
     const url = new URL(`${this.baseUrl}/voucherlist`);
     
-    // Use minimal parameters to test the API connection
+    // Set parameters for today's invoices
     url.searchParams.append('page', '0');
-    url.searchParams.append('size', '25');
+    url.searchParams.append('size', '100');
     url.searchParams.append('sort', 'voucherDate,DESC');
     url.searchParams.append('voucherType', 'invoice');
-    url.searchParams.append('voucherStatus', 'open');
+    url.searchParams.append('voucherStatus', 'open,paid,paidoff,voided');
 
     try {
       const response = await fetch(url.toString(), {
@@ -43,20 +43,29 @@ class LexOfficeClient {
 }
 
 const api = new LexOfficeClient(process.env.LEX_OFFICE_API_KEY);
+const TODAY = '2025-05-17';
 
 try {
   console.log('Fetching voucher list...');
   const result = await api.getVoucherlist();
   
   if (result.content && Array.isArray(result.content)) {
-    console.log('Recent invoices:\n');
-    result.content.forEach(invoice => {
+    const todaysInvoices = result.content.filter(invoice => 
+      invoice.voucherDate.startsWith(TODAY)
+    );
+
+    console.log(`Invoices from ${TODAY}:\n`);
+    todaysInvoices.forEach(invoice => {
       console.log(`Invoice Number: ${invoice.voucherNumber}`);
       console.log(`Date: ${invoice.voucherDate}`);
       console.log(`Amount: ${invoice.totalAmount} ${invoice.currency}`);
       console.log(`Status: ${invoice.voucherStatus}`);
       console.log('------------------------');
     });
+
+    if (todaysInvoices.length === 0) {
+      console.log('No invoices found for today.');
+    }
   } else {
     console.log('No invoices found or unexpected response format:', result);
   }
