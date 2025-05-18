@@ -43,7 +43,11 @@ class LexOfficeClient {
         timeMultiple: 2,
         retry: (error) => {
           console.log(`Retry attempt due to error: ${error.message}`);
-          return true;
+          // Specifically check for socket hang up errors and other network-related issues
+          return error.message.includes('socket hang up') || 
+                 error.message.includes('ECONNRESET') ||
+                 error.message.includes('ETIMEDOUT') ||
+                 true;
         }
       });
     } catch (error) {
