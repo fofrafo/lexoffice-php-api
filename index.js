@@ -60,16 +60,18 @@ class LexOfficeClient {
     try {
       // Implement retry logic with exponential backoff
       return await backOff(() => fetchWithRetry(), {
-        numOfAttempts: 10, // Increased from 5 to 10
-        startingDelay: 2000, // Increased from 1000 to 2000 milliseconds
-        maxDelay: 60000, // Increased from 30000 to 60000 milliseconds
+        numOfAttempts: 10,
+        startingDelay: 2000,
+        maxDelay: 60000,
         timeMultiple: 2,
         retry: (error) => {
           console.log(`Retry attempt due to error: ${error.message}`);
-          // Specifically check for socket hang up errors and other network-related issues
+          // Enhanced error checking for network-related issues
           const shouldRetry = error.message.includes('socket hang up') || 
                             error.message.includes('ECONNRESET') ||
-                            error.message.includes('ETIMEDOUT');
+                            error.message.includes('ETIMEDOUT') ||
+                            error.code === 'ECONNREFUSED' ||
+                            error.code === 'ENOTFOUND';
           if (shouldRetry) {
             console.log('Network-related error detected, attempting retry...');
           }
