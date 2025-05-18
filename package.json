@@ -1,7 +1,10 @@
 {
+  "name": "lexoffice-client",
+  "version": "1.0.0",
   "type": "module",
   "dependencies": {
     "dotenv": "^16.3.1",
-    "node-fetch": "^3.3.2"
+    "node-fetch": "^3.3.2",
+    "exponential-backoff": "^3.1.1"
   }
 }

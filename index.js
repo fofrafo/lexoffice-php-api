@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import fetch from 'node-fetch';
+import { backOff } from 'exponential-backoff';
 
 class LexOfficeClient {
   constructor(apiKey) {
@@ -17,7 +18,7 @@ class LexOfficeClient {
     url.searchParams.append('voucherType', 'invoice');
     url.searchParams.append('voucherStatus', 'open,paid,paidoff,voided');
 
-    try {
+    const fetchWithRetry = async () => {
       const response = await fetch(url.toString(), {
         headers: {
           'Authorization': `Bearer ${this.apiKey}`,
@@ -31,6 +32,20 @@ class LexOfficeClient {
       }
 
       return response.json();
+    };
+
+    try {
+      // Implement retry logic with exponential backoff
+      return await backOff(() => fetchWithRetry(), {
+        numOfAttempts: 5,
+        startingDelay: 1000,
+        maxDelay: 30000,
+        timeMultiple: 2,
+        retry: (error) => {
+          console.log(`Retry attempt due to error: ${error.message}`);
+          return true;
+        }
+      });
     } catch (error) {
       console.error('Request URL:', url.toString());
       console.error('Request Headers:', {
